@@ -1,11 +1,19 @@
-如使用以上服务没有完成截图的功能实现，则启动容器后，手动分布执行dockerfile 的内容，commit 成为新镜像
+imyulizzz/chromegin-ubuntu
+---
+基于Go、Chromedp 的截图服务
 
-现在：稳定的镜像为： **imyulizzz/chromegin-ubuntu:v0.0.6**
+[√]  支持表情包显示；
+[TODO] 截图清晰度待提高
 
-二进制命令构建为： ** GOOS=linux GOARCH=amd64 go build . **
-构建命令为： ** docker build -t imyulizzz/chromegin-ubuntu:v0.0.6 . **
+**构建命令**
 
-### imyulizzz/chromegin-ubuntu:v0.0.6 Dockerfile
+```
+docker build -t imyulizzz/chromegin-ubuntu:v0.0.6 . 
+```
+
+当前稳定的基础镜像为： **imyulizzz/chromegin-ubuntu:v0.0.6**
+
+#### imyulizzz/chromegin-ubuntu:v0.0.6 Dockerfile
 
 ```
 FROM ubuntu:22.04
