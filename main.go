@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
-	"log"
 )
 
 const staticDir = "/pic"
@@ -15,7 +17,7 @@ var (
 )
 
 func main() {
-
+	fmt.Printf("%s 服务启动....\n", time.Now().Format("2006年01月02日 15:04:05"))
 	r := gin.New()
 	r.Use(static.Serve("/", static.LocalFile(staticDir, true)))
 
