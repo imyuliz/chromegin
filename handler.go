@@ -4,15 +4,16 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
-	"github.com/chromedp/cdproto/emulation"
-	"github.com/chromedp/cdproto/page"
-	"github.com/chromedp/chromedp"
-	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"log"
 	"math"
 	"path/filepath"
 	"time"
+
+	"github.com/chromedp/cdproto/emulation"
+	"github.com/chromedp/cdproto/page"
+	"github.com/chromedp/chromedp"
+	"github.com/gin-gonic/gin"
 )
 
 func handleError(c *gin.Context, err error) bool {
@@ -77,8 +78,13 @@ func makeActions(arg *ReqJob, res *[]byte) chromedp.Tasks {
 	ts := chromedp.Tasks{
 		chromedp.Navigate(arg.Url),
 	}
+	// if arg.PxWidth > 0 && arg.PxHeight > 0 {
+	// 	ts = append(ts, chromedp.EmulateViewport(arg.PxWidth, arg.PxHeight))
+	// }
 	if arg.PxWidth > 0 && arg.PxHeight > 0 {
-		ts = append(ts, chromedp.EmulateViewport(arg.PxWidth, arg.PxHeight))
+		ts = append(ts, chromedp.EmulateViewport(arg.PxWidth, arg.PxHeight, func(sdmop *emulation.SetDeviceMetricsOverrideParams, steep *emulation.SetTouchEmulationEnabledParams) {
+			sdmop.DeviceScaleFactor = 3
+		}))
 	}
 	if arg.Wait > 0 {
 		wtFn := func(ctx context.Context) error {
