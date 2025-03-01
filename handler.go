@@ -19,7 +19,6 @@ import (
 func handleError(c *gin.Context, err error) bool {
 	if err != nil {
 		log.Println(err)
-		//logrus.WithError(err).Error("gin context http handler error")
 		c.JSON(200, ResJob{
 			Code: 400,
 			Msg:  err.Error(),
@@ -36,21 +35,20 @@ func sha256String(data []byte) string {
 }
 
 func takeShot(arg *ReqJob) (res *ResJob, err error) {
-	//set time-out
+	// 设置超时
 	ctx, cancel := chromedp.NewContext(
 		context.Background(),
 		chromedp.WithLogf(log.Printf),
 	)
 	defer cancel()
 
-	// create a timeout
-
+	// 创建超时
 	if arg.Timeout > 0 {
 		ctx, cancel = context.WithTimeout(ctx, time.Duration(arg.Timeout)*time.Second)
 		defer cancel()
 	}
 
-	// capture screenshot of an element
+	// 捕获元素截图
 	var buf []byte
 	if err := chromedp.Run(ctx, makeActions(arg, &buf)); err != nil {
 		return nil, err
@@ -70,20 +68,16 @@ func takeShot(arg *ReqJob) (res *ResJob, err error) {
 		Url:  "",
 		B64:  dataString,
 	}, err
-
 }
 
-// makeActions takes a screenshot of a specific element.
+// makeActions 优化截图清晰度
 func makeActions(arg *ReqJob, res *[]byte) chromedp.Tasks {
 	ts := chromedp.Tasks{
 		chromedp.Navigate(arg.Url),
 	}
-	// if arg.PxWidth > 0 && arg.PxHeight > 0 {
-	// 	ts = append(ts, chromedp.EmulateViewport(arg.PxWidth, arg.PxHeight))
-	// }
 	if arg.PxWidth > 0 && arg.PxHeight > 0 {
 		ts = append(ts, chromedp.EmulateViewport(arg.PxWidth, arg.PxHeight, func(sdmop *emulation.SetDeviceMetricsOverrideParams, steep *emulation.SetTouchEmulationEnabledParams) {
-			sdmop.DeviceScaleFactor = 3
+			sdmop.DeviceScaleFactor = 2 // 调整设备像素比以提高清晰度
 		}))
 	}
 	if arg.Wait > 0 {
@@ -101,7 +95,7 @@ func makeActions(arg *ReqJob, res *[]byte) chromedp.Tasks {
 		}
 
 		fullScreenFn := func(ctx context.Context) error {
-			// get layout metrics
+			// 获取布局指标
 			_, _, contentSize, err := page.GetLayoutMetrics().Do(ctx)
 			if err != nil {
 				return err
@@ -109,9 +103,9 @@ func makeActions(arg *ReqJob, res *[]byte) chromedp.Tasks {
 
 			width, height := int64(math.Ceil(contentSize.Width)), int64(math.Ceil(contentSize.Height))
 
-			// force viewport emulation
-			err = emulation.SetDeviceMetricsOverride(width, height, 1, false).
-				WithScreenOrientation(&emulation.ScreenOrientation{
+			// 强制视口仿真
+			err = emulation.SetDeviceMetricsOverride(width, height, 2, false). // 调整设备像素比以提高清晰度
+												WithScreenOrientation(&emulation.ScreenOrientation{
 					Type:  emulation.OrientationTypePortraitPrimary,
 					Angle: 0,
 				}).
@@ -120,7 +114,7 @@ func makeActions(arg *ReqJob, res *[]byte) chromedp.Tasks {
 				return err
 			}
 
-			// capture screenshot
+			// 捕获截图
 			*res, err = page.CaptureScreenshot().
 				WithQuality(arg.Quality).
 				WithClip(&page.Viewport{
@@ -137,7 +131,6 @@ func makeActions(arg *ReqJob, res *[]byte) chromedp.Tasks {
 		}
 
 		ts = append(ts, chromedp.ActionFunc(fullScreenFn))
-
 	}
 
 	return ts
